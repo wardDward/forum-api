@@ -6,11 +6,12 @@ import Token from "../models/tokenModel.js";
 const refreshToken = asyncHandler(async (req, res, next) => {
   let refreshToken = req.cookies["refreshToken"];
   console.log("refresh token");
-  const decoded = jwtDecode(refreshToken);
-  console.log(decoded);
+  // const decoded = jwtDecode(refreshToken);
+  // console.log(decoded);
 
   if (!refreshToken) {
     res.status(401);
+    req.authFlag = false;
     throw new Error("Access Denied. No refresh token provided.");
   }
 
@@ -20,13 +21,16 @@ const refreshToken = asyncHandler(async (req, res, next) => {
     async (err, decoded) => {
       if (err) {
         res.status(403);
+        req.authFlag = false;
         throw new Error("Forbidden. Invalid refresh token.");
       }
 
+      console.log(decoded);
       const existingToken = await Token.findOne({ refreshToken });
 
       if (!existingToken || existingToken.revoked) {
         res.clearCookie("refreshToken", { httpOnly: true });
+        req.authFlag = false;
         return res.status(403).send("Token invalid or revoked");
       }
 
@@ -35,11 +39,14 @@ const refreshToken = asyncHandler(async (req, res, next) => {
         existingToken.expiresAt / 1000
       );
 
-      console.log(existingTokenExpirationTimeSeconds);
-      //check if the existing token is expired
-      if (existingTokenExpirationTimeSeconds > decoded.exp * 1000) {
+      //  check if the existing token is expired
+      if (
+        existingTokenExpirationTimeSeconds > decoded.exp * 1000 ||
+        req.authFlag === false
+      ) {
         await Token.findOneAndUpdate({ refreshToken }, { revoked: true });
         res.clearCookie("refreshToken", { httpOnly: true });
+        req.authFlag = false;
         return res.status(403).send("Token expired");
       }
 
@@ -47,7 +54,7 @@ const refreshToken = asyncHandler(async (req, res, next) => {
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       // Generate new access token
       const newAccessToken = jwt.sign(
-        { userID: decoded.userID },
+        { user: decoded.user },
         process.env.ACCESS_TOKEN_SECRET_KEY,
         { expiresIn: "30s" }
       );
@@ -55,7 +62,7 @@ const refreshToken = asyncHandler(async (req, res, next) => {
       // token rotation implementation
       // store new token
       await Token.create({
-        user: decoded.userID,
+        user: decoded.user._id,
         refreshToken,
         expiresAt,
         revoked: false,
@@ -66,7 +73,7 @@ const refreshToken = asyncHandler(async (req, res, next) => {
 
       // new access token with 30s duration
       res.cookie("jwt_token", newAccessToken, { maxAge: 30000 });
-      return res.status(204).send();
+      return res.status(204).send({ decoded });
     }
   );
 });

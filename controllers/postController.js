@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Post from "../models/postModel.js";
 import { body, validationResult } from "express-validator";
+import Tags from "../models/tagModels.js";
 
 const createPostValidator = [
   body("title", "Title is required").not().isEmpty(),
@@ -27,9 +28,8 @@ const createPost = asyncHandler(async (req, res) => {
 });
 
 const getAllPost = asyncHandler(async (req, res) => {
-  console.log(res);
   const posts = await Post.find();
-  if (posts.length === 0) {
+  if (!posts) {
     res.status(404);
     throw new Error("No Post Found");
   }
@@ -79,10 +79,6 @@ const deletePost = asyncHandler(async (req, res) => {
   }
   const deletedPost = await Post.findByIdAndDelete(req.params.id);
   return res.send(deletedPost);
-});
-
-const searchByTag = asyncHandler(async (req, res) => {
-  await res.send("search by tag");
 });
 
 export {

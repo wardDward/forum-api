@@ -9,21 +9,24 @@ const validateToken = asyncHandler((req, res, next) => {
     throw new Error("Access denied. No access token provided.");
   }
 
-  jwt.verify(
-    accessToken,
-    process.env.ACCESS_TOKEN_SECRET_KEY,
-    (err, decoded) => {
-      if (err === "TokenExpiredError") {
-        res.status(403);
-        throw new Error("Access Token Expired");
+  if (req.authFlag === false){
+    res.status(403);
+    throw new Error("Authentication Restricted");
+  }
+  
+    jwt.verify(
+      accessToken,
+      process.env.ACCESS_TOKEN_SECRET_KEY,
+      (err, decoded) => {
+        if (err === "TokenExpiredError") {
+          res.status(403);
+          throw new Error("Access Token Expired");
+        }
+        req.user = decoded.user;
+        req.authFlag = true;
+        next();
       }
-
-      req.user = decoded.userID;
-      console.log(req.user);
-      console.log("decoded: ", decoded);
-      next();
-    }
-  );
+    );
 });
 
 export default validateToken;

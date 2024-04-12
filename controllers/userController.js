@@ -9,6 +9,11 @@ const registerValidator = [
   body("password", "Password is required").not().isEmpty().escape(),
 ];
 
+const loginValidator = [
+  body("email", "Email is required").not().isEmpty().escape(),
+  body("password", "Password is required").not().isEmpty().escape(),
+];
+
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
   const errors = validationResult(req);
@@ -44,28 +49,48 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
+  const errors = validationResult(req);
+
+  if (!email || !password)
+    return res.status(422).json({
+      errors: {
+        ...(email ? {} : { email: ["Email is required"] }),
+        ...(password ? {} : { password: ["Password is required"] }),
+      },
+    });
 
   if (!user) {
-    res.status(404);
-    throw new Error("Email Not Found");
+    return res.status(422).json({ errors: [{ email: "Email Not Found" }] });
   }
 
   if (user && (await user.isPasswordValid(password))) {
-    generateToken(res, user._id);
+    generateToken(req, res, user);
     return res.status(200).json({
       user: {
-        _id: user._id,
         email: user.email,
       },
+      message: "Login Successfully",
     });
   } else {
-    res.status(401);
-    throw new Error("Invalid email or password");
+    return res
+      .status(422)
+      .json({ errors: [{ message: "Invalid email or password" }] });
   }
 });
 
 const authenticatedUser = asyncHandler((req, res) => {
-  res.send("auth user");
+  const user = req.user;
+  const authFlag = req.authFlag;
+  return res.status(200).json({
+    user: user,
+    authFlag: authFlag,
+  });
 });
 
-export { authenticatedUser, loginUser, registerUser, registerValidator };
+export {
+  authenticatedUser,
+  loginUser,
+  registerUser,
+  registerValidator,
+  loginValidator,
+};

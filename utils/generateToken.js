@@ -2,19 +2,23 @@ import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import Token from "../models/tokenModel.js";
 
-const generateToken = asyncHandler((res, userID) => {
-  // generate a access token
+const generateToken = asyncHandler((req, res, user) => {
+  const userForToken = {
+    _id: user._id,
+    username: user.username,
+    email: user.email,
+    // Add other necessary fields if needed
+  };
   const accessToken = jwt.sign(
-    { userID },
+    { user: userForToken },
     process.env.ACCESS_TOKEN_SECRET_KEY,
     {
-      expiresIn: "10s",
+      expiresIn: "1h", // 1 hour expiry
     }
   );
 
-  // generate a refreshToken
   const refreshToken = jwt.sign(
-    { userID },
+    { user: userForToken },
     process.env.REFRESH_TOKEN_SECRET_KEY,
     { expiresIn: "7d" }
   );
@@ -24,22 +28,26 @@ const generateToken = asyncHandler((res, userID) => {
 
   // storing refresh token
   const newRefreshToken = new Token({
-    user: userID,
+    user: user._id,
     refreshToken,
     expiresAt,
     revoked: false,
   });
+
   newRefreshToken.save();
 
   //cookie response
-  res.cookie("jwt_token", accessToken, { maxAge: 60000 });
+  res.cookie("jwt_token", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "strict",
+    maxAge: 3600000,
+  }); // 1 hour expiry (3600 seconds * 1000 milliseconds)
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV !== "development",
     sameSite: "strict",
   });
-
-  return res.status(204).send();
 });
 
 export default generateToken;
