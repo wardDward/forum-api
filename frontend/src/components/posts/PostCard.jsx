@@ -1,27 +1,39 @@
-export default function PostCard() {
+import { Link } from "react-router-dom";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import InsertCommentOutlinedIcon from "@mui/icons-material/InsertCommentOutlined";
+
+export default function PostCard({ post }) {
   return (
-    <a
-      href="#"
-      className="w-full md:max-w-[300px] max-h-[500px] bg-white border border-gray-200 rounded-lg shadow hover:dark:bg-gray-300"
-    >
-      <div>
+    <div className="bg-white border border-gray-200 rounded-lg shadow p-3 w-[350px] sm:w-[500px] md:w-[550px] lg:w-[900px] my-2 max-h-[300px] overflow-hidden">
+      {/* <div>
         <img
           className="rounded-t-lg"
           src="https://images.unsplash.com/photo-1642649149963-0ef6779df6c6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt=""
         />
-      </div>
-      <div className="p-5">
+      </div> */}
+      <div className="">
         <div>
-          <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">
-            Noteworthy technology acquisitions 2021
-          </h5>
+          <Link
+            to={{ pathname: `/posts/${post._id}` }}
+            className="mb-1 text-2xl font-bold tracking-tight text-gray-900"
+          >
+            {post.title}
+          </Link>
         </div>
-        <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-          Here are the biggest enterprise technology acquisitions of 2021 so
-          far, in reverse chronological order.
-        </p>
+        <p
+          className="font-normal text-gray-700 truncate dark:text-gray-400 line-clamp-3 prose max-w-none mx-auto"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        ></p>
       </div>
-    </a>
+      <form className="flex items-center mt-4">
+        <button type="submit" className="mr-2 hover:text-gray-500">
+          <FavoriteBorderIcon sx={{ fontSize: 20 }} />
+        </button>
+        <button className="mr-2 hover:text-gray-500">
+          <InsertCommentOutlinedIcon sx={{ fontSize: 20 }} />
+        </button>
+      </form>
+    </div>
   );
 }

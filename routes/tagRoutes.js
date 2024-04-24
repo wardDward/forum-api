@@ -1,7 +1,9 @@
 import express from "express";
-import { createTag, searchTag } from "../controllers/tagController.js";
+import { createTag, getSpecificTag, getTags } from "../controllers/tagController.js";
 const router = express.Router();
 
-router.route("/").get(searchTag).post(createTag);
+router.route("/").get(getTags).post(createTag);
+router.route('/:_id').get(getSpecificTag)
+
 
 export default router;

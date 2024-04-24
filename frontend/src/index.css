@@ -4,9 +4,25 @@
 @tailwind components;
 @tailwind utilities;
 
+
 * {
   font-family: "Roboto", sans-serif;
   transition: all 0.3s linear;
 }
 
+.tiptap-buttons {
+  @apply border border-gray-400 py-[0.9px] px-2 rounded-md mx-2 hover:bg-slate-200;
+}
 
+
+pre{
+  width: 100%;
+  margin-top: 10px;
+  padding: 20px;
+  background: #000;
+  color: white;
+  border-radius:20px;
+}
+.custom-prose-width {
+  width: 100%; /* or any other desired width */
+}

@@ -13,7 +13,7 @@ const generateToken = asyncHandler((req, res, user) => {
     { user: userForToken },
     process.env.ACCESS_TOKEN_SECRET_KEY,
     {
-      expiresIn: "1h", // 1 hour expiry
+      expiresIn: "6h", // 1 hour expiry
     }
   );
 

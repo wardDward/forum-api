@@ -1,47 +1,73 @@
 import asyncHandler from "express-async-handler";
 import Post from "../models/postModel.js";
-import { body, validationResult } from "express-validator";
-import Tags from "../models/tagModels.js";
-
-const createPostValidator = [
-  body("title", "Title is required").not().isEmpty(),
-  body("description", "Body is required").not().isEmpty(),
-  body("tags", "Tags is required").not().isEmpty(),
-];
+import PostView from "../models/postViewModel.js";
+import Notification from "../models/notificationModel.js";
 
 const createPost = asyncHandler(async (req, res) => {
-  const { title, description, tags } = req.body;
+  const { title, content, tags } = req.body;
   const authUser = req.user;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+  if (!title || !content) {
+    return res.status(422).json({
+      errors: {
+        ...(title ? {} : { title: ["Post title is required"] }),
+        ...(content ? {} : { content: ["Content is required"] }),
+      },
+    });
+  }
+
+  if (tags.length === 0) {
+    return res.status(422).json({
+      errors: {
+        tags: ["Choose atleast one related tag"],
+      },
+    });
   }
 
   const post = await Post.create({
     user: authUser,
     title,
-    description,
+    content,
     tags,
   });
 
-  return res.status(201).json(post); // Send the response after successful creation
+  if (post) {
+    await Notification.create({
+      sender_id: authUser._id,
+      receiver_id: authUser._id,
+      about: `${post.title} your post has been published.`,
+      type: "post",
+    });
+  }
+
+  return res.status(201).json({
+    post,
+  });
 });
 
 const getAllPost = asyncHandler(async (req, res) => {
   const posts = await Post.find();
+
   if (!posts) {
-    res.status(404);
-    throw new Error("No Post Found");
+    return res.status(404).json({ posts: ["No Post Found"] });
   }
   return res.status(200).json({ posts: posts });
 });
 
 const getPost = asyncHandler(async (req, res) => {
-  const post = await Post.findById({ _id: req.params.id });
+  const post = await Post.findById({ _id: req.params.id }).populate("tags");
   if (!post) {
-    res.status(404);
-    throw new Error("No Post Found");
+    return res.status(404).json({ errors: ["No Post Found"] });
   }
+
+  const user = req.user;
+
+  if (user) {
+    const view = await PostView.create({
+      post_id: post,
+      user_id: user._id,
+    });
+  }
+
   return res.status(200).json({
     post: post,
   });
@@ -81,11 +107,4 @@ const deletePost = asyncHandler(async (req, res) => {
   return res.send(deletedPost);
 });
 
-export {
-  createPost,
-  getAllPost,
-  getPost,
-  updatePost,
-  deletePost,
-  createPostValidator,
-};
+export { createPost, getAllPost, getPost, updatePost, deletePost };

@@ -1,18 +1,6 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
-import { body, validationResult } from "express-validator";
 import generateToken from "../utils/generateToken.js";
-
-const registerValidator = [
-  body("username", "Username is required").not().isEmpty().escape(),
-  body("email", "Email is required").not().isEmpty().escape(),
-  body("password", "Password is required").not().isEmpty().escape(),
-];
-
-const loginValidator = [
-  body("email", "Email is required").not().isEmpty().escape(),
-  body("password", "Password is required").not().isEmpty().escape(),
-];
 
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
@@ -49,8 +37,6 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  const errors = validationResult(req);
-
   if (!email || !password)
     return res.status(422).json({
       errors: {
@@ -60,7 +46,7 @@ const loginUser = asyncHandler(async (req, res) => {
     });
 
   if (!user) {
-    return res.status(422).json({ errors: [{ email: "Email Not Found" }] });
+    return res.status(422).json({ errors: { email: ["Email Not Found"] } });
   }
 
   if (user && (await user.isPasswordValid(password))) {
@@ -74,7 +60,7 @@ const loginUser = asyncHandler(async (req, res) => {
   } else {
     return res
       .status(422)
-      .json({ errors: [{ message: "Invalid email or password" }] });
+      .json({ errors: { email: ["Invalid email or password"] } });
   }
 });
 
@@ -87,10 +73,4 @@ const authenticatedUser = asyncHandler((req, res) => {
   });
 });
 
-export {
-  authenticatedUser,
-  loginUser,
-  registerUser,
-  registerValidator,
-  loginValidator,
-};
+export { authenticatedUser, loginUser, registerUser };

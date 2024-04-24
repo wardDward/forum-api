@@ -6,9 +6,8 @@ import useAuth from "../../hooks/useAuth";
 
 export default function MainLayout() {
   const { user } = useAuth();
-  console.log(user);
   const [toggleNotif, setToggleNotif] = useState(false);
-
+  
   const toggleNotification = () => {
     return setToggleNotif(!toggleNotif);
   };

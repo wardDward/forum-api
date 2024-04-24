@@ -1,12 +1,10 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import Nexio from "../../assets/nexio.png";
-import TagsDropDown from "./TagsDropDown";
 
 // icons
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
-import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
 import AddBoxOutlinedIcon from "@mui/icons-material/AddBoxOutlined";
 import MenuOutlined from "@mui/icons-material/MenuOutlined";
@@ -15,16 +13,11 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import CloseIcon from "@mui/icons-material/Close";
 
-export default function Sidebar({ toggleNotification, activeNotif, data }) {
-  const [showCat, setShowCat] = useState(false);
+export default function Sidebar({ toggleNotification, activeNotif }) {
   const [toggle, setToggle] = useState(false);
 
   const toggleNotif = () => {
     toggleNotification();
-  };
-
-  const toggleCategories = () => {
-    setShowCat(!showCat);
   };
 
   const toggleSidebar = (display) => {
@@ -78,28 +71,20 @@ export default function Sidebar({ toggleNotification, activeNotif, data }) {
                 </>
               )}
             </NavLink>
-            <a
-              onClick={(e) => toggleCategories(e)}
-              role="link"
-              href="#"
+            <NavLink
+              to="/tags"
+              role="button"
               className="flex items-center justify-between px-4 py-2 my-2 rounded-lg hover:bg-gray-300"
             >
               <div>
                 <CategoryOutlinedIcon sx={{ fontSize: "30px" }} />
                 <span className="ml-2 font-[500]">Tags</span>
               </div>
-              <KeyboardArrowDownOutlinedIcon
-                sx={{
-                  fontSize: "20px",
-                }}
-                className={showCat ? "rotate-180" : ""}
-              />
-            </a>
-            {showCat ? <TagsDropDown /> : ""}
+            </NavLink>
             <a
               role="button"
               href="#"
-              className="flex items-center px-4 py-2 my-2 rounded-lg hover:bg-gray-300"
+              className="flex items-center px-4 py-2 my-2 rounded-lg hover:bg-gray-300 relative"
               onClick={(e) => toggleNotif(e)}
             >
               {activeNotif ? (
@@ -114,6 +99,9 @@ export default function Sidebar({ toggleNotification, activeNotif, data }) {
                 />
               )}
               <span className="ml-2 font-[500]">Notifications</span>
+              <div className="bg-red-500 h-[20px] w-[20px] flex justify-center items-center rounded-full text-white absolute right-2 text-xs">
+                1
+              </div>
             </a>
             <NavLink
               role="button"

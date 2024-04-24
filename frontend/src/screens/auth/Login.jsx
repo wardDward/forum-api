@@ -14,6 +14,8 @@ export default function Login() {
     password: "",
   });
 
+
+
   const handleInput = (e) => {
     handleInputChange(e, formData, setFormData);
   };
@@ -22,6 +24,8 @@ export default function Login() {
     e.preventDefault();
     await dispatch(loginUser(formData));
   };
+
+
 
   return (
     <main className="py-[20px] md:py-[30px] lg:py-[40px] px-0 lg:px-[120px] flex items-center justify-center">

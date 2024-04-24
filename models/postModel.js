@@ -11,14 +11,16 @@ const postSchema = Schema(
       type: String,
       required: [true, "Post title is required"],
     },
-    description: {
+    content: {
       type: String,
-      required: [true, "Description title is required"],
+      required: [true, "Content is required"],
     },
-    tags: {
-      type: Array,
-      required: [true, "Tags are required"],
-    },
+    tags: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Tag",
+      },
+    ],
   },
   { timestamps: true }
 );

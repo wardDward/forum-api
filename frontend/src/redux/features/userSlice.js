@@ -8,6 +8,7 @@ export const loginUser = createAsyncThunk(
       await axios.post("/api/users/login", credentials);
       await thunkApi.dispatch(authenticatedUser());
     } catch (error) {
+      credentials.password = "";
       return thunkApi.rejectWithValue(error.response.data.errors);
     }
   }
@@ -23,6 +24,7 @@ export const authenticatedUser = createAsyncThunk(
     } catch (error) {
       console.log(error);
       alert("Server Errror");
+      window.location.reload()
       return thunkApi.rejectWithValue(error.response);
     }
   }
@@ -31,7 +33,7 @@ export const authenticatedUser = createAsyncThunk(
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    user: null,
+    user: {},
     persistUser: localStorage.getItem("user")
       ? JSON.parse(localStorage.getItem("user"))
       : null,
@@ -58,7 +60,7 @@ const userSlice = createSlice({
       .addCase(authenticatedUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user;
-        
+
         const persistUser = { ...action.payload.user };
         delete persistUser._id;
 
